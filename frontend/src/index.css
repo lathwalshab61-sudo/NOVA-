@@ -1,0 +1,12 @@
+/* Global styles for NOVA Platform */
+@layer base {
+  body {
+    background-color: #f9f9ff;
+    color: #111c2d;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}

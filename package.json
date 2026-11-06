@@ -1,0 +1,13 @@
+{
+  "name": "nova-travel-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node start-all.js",
+    "start": "node start-all.js",
+    "backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev"
+  }
+}
+
