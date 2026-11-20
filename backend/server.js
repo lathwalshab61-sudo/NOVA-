@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+
+import { connectDB, getDBStatus } from './src/config/db.js';
 
 import destinationsRouter from './src/routes/destinations.js';
 import experiencesRouter from './src/routes/experiences.js';
@@ -38,7 +41,13 @@ app.get('/', (req, res) => {
     name: 'NOVA Travel Exploration Platform API',
     status: 'online',
     version: '1.0.0',
+    database: {
+      connected: getDBStatus(),
+      provider: 'MongoDB Atlas',
+      name: mongoose.connection?.name || 'nova_travel'
+    },
     documentation: {
+      health: '/api/health',
       destinations: '/api/destinations',
       destinationDetail: '/api/destinations/:id',
       experiences: '/api/experiences',
@@ -47,6 +56,20 @@ app.get('/', (req, res) => {
       newsletter: '/api/newsletter',
       inquiries: '/api/inquiries',
       auth: '/api/auth'
+    }
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    database: {
+      connected: getDBStatus(),
+      readyState: mongoose.connection?.readyState, // 1 = connected
+      host: mongoose.connection?.host,
+      name: mongoose.connection?.name
     }
   });
 });
@@ -71,13 +94,17 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
+// Start server immediately
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`===============================================`);
   console.log(` NOVA Travel API Server is running on port ${PORT}`);
   console.log(` http://localhost:${PORT}`);
   console.log(`===============================================`);
 });
 
-export default app;
+// Connect to MongoDB Atlas in the background
+connectDB().catch((err) => {
+  console.error('Initial DB connection error:', err.message);
+});
 
+export default app;

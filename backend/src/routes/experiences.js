@@ -1,34 +1,64 @@
 import express from 'express';
-import { experiences } from '../data/mockData.js';
+import Experience from '../models/Experience.js';
+import { experiences as fallbackExperiences } from '../data/mockData.js';
+import { getDBStatus } from '../config/db.js';
 
 const router = express.Router();
 
-// GET all curated experiences
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    count: experiences.length,
-    data: experiences
-  });
+router.get('/', async (req, res, next) => {
+  try {
+    if (getDBStatus()) {
+      const experiences = await Experience.find().lean();
+      return res.json({
+        success: true,
+        source: 'mongodb',
+        count: experiences.length,
+        data: experiences
+      });
+    }
+
+    res.json({
+      success: true,
+      source: 'memory_fallback',
+      count: fallbackExperiences.length,
+      data: fallbackExperiences
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-// GET experience by ID
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-  const exp = experiences.find((item) => item.id === id);
+router.get('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
-  if (!exp) {
-    return res.status(404).json({
-      success: false,
-      message: `Experience with ID "${id}" not found.`
+    if (getDBStatus()) {
+      const exp = await Experience.findOne({ id }).lean();
+      if (exp) {
+        return res.json({
+          success: true,
+          source: 'mongodb',
+          data: exp
+        });
+      }
+    }
+
+    const fallback = fallbackExperiences.find((item) => item.id === id);
+    if (!fallback) {
+      return res.status(404).json({
+        success: false,
+        message: `Experience with ID "${id}" not found.`
+      });
+    }
+
+    res.json({
+      success: true,
+      source: 'memory_fallback',
+      data: fallback
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.json({
-    success: true,
-    data: exp
-  });
 });
 
 export default router;
-

@@ -1,6 +1,18 @@
-# How to Run Backend and Frontend Together
+# How to Run Backend and Frontend Together (with MongoDB Atlas)
 
-This guide outlines how to run the **NOVA Travel Exploration Platform** full-stack application (React Frontend + Node.js/Express Backend).
+This guide outlines how to run the **NOVA Travel Exploration Platform** full-stack application (React Frontend + Node.js/Express Backend + MongoDB Atlas Database).
+
+---
+
+## 🗄️ Database: MongoDB Atlas
+
+The backend connects directly to your cloud MongoDB Atlas database:
+- **Database:** `nova_travel`
+- **Cluster:** `cluster0.wfjnzya.mongodb.net`
+- **Config file:** `backend/.env`
+- **Status / Health check:** `http://localhost:5000/api/health`
+
+All destination queries, wishlist bookmarks, inquiries, newsletter subscriptions, and experiences are stored and retrieved from MongoDB Atlas.
 
 ---
 
@@ -13,7 +25,7 @@ npm run dev
 ```
 
 > **What this does:**
-> - Launches the Express API server on `http://localhost:5000`
+> - Launches the Express API server on `http://localhost:5000` (connected to MongoDB Atlas)
 > - Launches the Vite React frontend on `http://localhost:5173`
 > - Streams logs from both services simultaneously in one terminal window
 > - Press `Ctrl + C` at any time to cleanly stop both servers.
@@ -30,7 +42,8 @@ cd backend
 npm run dev
 ```
 - **Backend URL:** `http://localhost:5000`
-- **Health Check:** `http://localhost:5000/api/destinations`
+- **Health Check & Atlas Status:** `http://localhost:5000/api/health`
+- **Destinations API:** `http://localhost:5000/api/destinations`
 
 ### Terminal 2: Frontend Application
 ```bash
@@ -44,12 +57,19 @@ npm run dev
 
 ## 🛠️ Verification & Troubleshooting
 
-### 1. Verify Node.js is Installed
-```bash
-node -v
-npm -v
+### 1. Check MongoDB Atlas Status
+Visit [http://localhost:5000/api/health](http://localhost:5000/api/health) in your browser. You will see:
+```json
+{
+  "status": "healthy",
+  "database": {
+    "connected": true,
+    "readyState": 1,
+    "host": "ac-t3idme9-shard-00-00.wfjnzya.mongodb.net",
+    "name": "nova_travel"
+  }
+}
 ```
-*(Requires Node.js v18 or higher)*
 
 ### 2. Verify Dependencies
 If you ever clone or move the project to a fresh machine:
@@ -66,6 +86,3 @@ npm install
 ### 3. Ports Used
 - **Backend:** Port `5000`
 - **Frontend:** Port `5173`
-
-If port 5000 is occupied by another service on your system, you can change `PORT=5000` in `backend/.env`.
-
